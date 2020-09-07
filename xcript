@@ -1,0 +1,297 @@
+#!/usr/local/bin/tcc -run -Wall -Werror -fdollars-in-identifiers
+
+
+#ifdef    DBG
+#undef    DBG
+#endif
+#define   DBG   ( 0 )
+
+#define   _GNU_SOURCE
+
+//#include  <alloca.h>
+#include  <errno.h>
+//#include  <signal.h>
+//#include  <stdarg.h>
+#include  <stdio.h>
+#include  <stdlib.h>
+#include  <string.h>
+#include  <sys/mman.h>
+//#include  <sys/mount.h>
+//#include  <sys/stat.h>
+#include  <sys/types.h>
+//#include  <sys/wait.h>
+#include  <unistd.h>
+
+
+insert_text ( FILE * , const char * );
+mmap_file   ( const char * , void ** , size_t * );
+
+
+int
+main( int argc, char **argv ) {
+
+
+ int  idx          =  0,
+      idxj         =  0,
+      retval       =  0,
+      memfdesc     = -1,
+      xtccoptcount =  0;
+ pid_t  procid;
+ FILE * memfhandle = NULL;
+ const char  text_defines   [ ] = "\n#include  <xcript/text_defines>\n",
+             text_globalvars[ ] = "\n#include  <xcript/text_globalvars>\n",
+             text_main      [ ] = "\n#include  <xcript/text_main>\n",
+             text_mainend   [ ] = "\n#include  <xcript/text_mainend>\n";
+ size_t  ptextlen  = (size_t) 0,
+         tmpsizet  = (size_t) 0;
+ char **myargv      = NULL,
+      **xtccoptlist = NULL;
+ char * tmpp        = NULL,
+      * scriptname  = NULL,
+      * progtext    = NULL,
+      * progtext1   = NULL,
+      * mainptr     = NULL,
+        myprogname[ 51 ],
+        tccpath[ ]  = "/usr/local/bin/tcc";
+
+
+#if  DBG
+  for( idx = 0; idx < argc; ++idx ) printf( "  argv[%d]=%s", idx, argv[idx] ); printf( "\n" );
+#endif
+
+
+  if( argc < 3 ) return 11;
+  scriptname = argv[2];
+
+  // PARSE ARGV[1] ( : ) EXTRA /BIN/XCRIPT OPTIONS:
+  tmpp = argv[1];
+  if( ':' != *tmpp ) return 12;
+  while( *++tmpp ) {
+    if( ' ' == *tmpp ) *tmpp = '\0';
+    else {
+      ++xtccoptcount;
+      while( 1 ) {
+        if( !*++tmpp )     break;
+        if( ' ' == *tmpp ) break;
+      }
+      --tmpp;
+    }
+  }
+  if( xtccoptcount ) {
+    if( !( xtccoptlist = malloc( xtccoptcount * sizeof(char*) ))) return 13;
+    tmpp = &argv[1][1];
+    for( idxj = 0; idxj < xtccoptcount; ++idxj ) {
+      while( !*tmpp ) ++tmpp;
+      xtccoptlist[idxj] = tmpp;
+      while( *++tmpp ) { }
+    }
+  }
+
+
+#if  DBG
+  for(idx=0;idx<xtccoptcount;++idx) printf("  xopt[%d]=%s", idx, xtccoptlist[idx]); printf("\n");
+#endif
+
+
+  // OPEN A MEMFD FILE WITH FILEHANDLE FOR OUTPUT:
+  if( -1 == ( memfdesc = memfd_create( "xcript", (unsigned) 0 ))) {
+    if( xtccoptlist ) free( xtccoptlist );
+    return 14;
+  }
+  if( !( memfhandle = fdopen( memfdesc, "r+b" ))) {
+    if( xtccoptlist ) free( xtccoptlist );
+    (void) close( memfdesc );
+    return 15;
+  }
+
+  // MMAP INPUTFILE:
+  if(( mmap_file( scriptname, &progtext, &ptextlen ))) {
+    if( xtccoptlist ) free( xtccoptlist );
+    (void) fclose( memfhandle );
+    return 16;
+  }
+
+  // PARSE INPUTFILE AS TEXT FOR POSSIBLE #MAIN DIRECTIVE:
+  if( !( progtext1 = strchr( progtext, '\n' ))) {
+    if( xtccoptlist ) free( xtccoptlist );
+    (void) fclose( memfhandle );
+    (void) munmap( progtext, ptextlen );
+    return 17;
+  }
+  if( !*++progtext ) {
+    if( xtccoptlist ) free( xtccoptlist );
+    (void) fclose( memfhandle );
+    (void) munmap( progtext, ptextlen );
+    return 18;
+  }
+  if(( mainptr = strstr( progtext1, "\n#main\n" ))) {
+    *++mainptr = '\0';
+    mainptr += 6;
+    if( !*mainptr ) {
+      if( xtccoptlist ) free( xtccoptlist );
+      (void) fclose( memfhandle );
+      (void) munmap( progtext, ptextlen );
+      return 19;
+    }
+  }
+
+  // WRITE THE PROGRAM:
+  // defines:
+  if(( insert_text( memfhandle, text_defines ))) {
+    if( xtccoptlist ) free( xtccoptlist );
+    (void) fclose( memfhandle );
+    (void) munmap( progtext, ptextlen );
+    return 20;
+  }
+  // globalvars:
+  if(( insert_text( memfhandle, text_globalvars ))) {
+    if( xtccoptlist ) free( xtccoptlist );
+    (void) fclose( memfhandle );
+    (void) munmap( progtext, ptextlen );
+    return 21;
+  }
+  // xcript/x_all_functions.c:
+  (void) fprintf( memfhandle, "\n#include  <xcript/x_all_functions.c>\n" );
+  // script text before #main (if any):
+  if( mainptr ) {
+    if(( insert_text( memfhandle, progtext1 ))) {
+      if( xtccoptlist ) free( xtccoptlist );
+      (void) fclose( memfhandle );
+      (void) munmap( progtext, ptextlen );
+      return 22;
+    }
+  }
+  // main:
+  if(( insert_text( memfhandle, text_main ))) {
+    if( xtccoptlist ) free( xtccoptlist );
+    (void) fclose( memfhandle );
+    (void) munmap( progtext, ptextlen );
+    return 23;
+  }
+/* hard-coded into <xcript/text_main>
+  (void) fprintf( memfhandle, "  $argc = %d;\n", ( argc - 2 ));
+  (void) fprintf( memfhandle, "  $argc = --argc;\n" );
+  (void) fprintf( memfhandle, "  $argv = &argv[1];\n" );
+  (void) fprintf( memfhandle, "  $argv = ++argv;\n" );
+*/
+  if(( insert_text( memfhandle, mainptr ? mainptr : progtext1 ))) {
+    if( xtccoptlist ) free( xtccoptlist );
+    (void) fclose( memfhandle );
+    (void) munmap( progtext, ptextlen );
+    return 24;
+  }
+  // mainend:
+  if(( insert_text( memfhandle, text_mainend ))) {
+    if( xtccoptlist ) free( xtccoptlist );
+    (void) fclose( memfhandle );
+    (void) munmap( progtext, ptextlen );
+    return 25;
+  }
+  fflush( memfhandle );
+  rewind( memfhandle );
+  (void) munmap( progtext, ptextlen );
+
+
+#if  DBG
+  printf("\n"); for(int achr=0;EOF !=(achr=fgetc(memfhandle));)fputc(achr,stdout);printf("\n");
+#endif
+
+
+  // EXECUTION:
+  procid = getpid();
+  (void) sprintf( myprogname, "/proc/%d/fd/%d", procid, memfdesc );
+  tmpsizet = (size_t)( 5 + xtccoptcount + argc );  // 4 + xtccoptcount + 3 + argc - 3 + 1
+  if( !( myargv = malloc( tmpsizet * sizeof(char*) ))) {
+    if( xtccoptlist ) free( xtccoptlist );
+    (void) fclose( memfhandle );
+    return 26;
+  }
+  myargv[0] = tccpath;
+  myargv[1] = "-Wall";
+  myargv[2] = "-Werror";
+  myargv[3] = "-fdollars-in-identifiers";
+  for( idx = 4; idx < 4 + xtccoptcount; ++idx ) myargv[idx] = xtccoptlist[idx-4];
+  myargv[idx]   = "-run";
+  myargv[++idx] = myprogname;  // this way it will be argv[0] in the run program
+  myargv[++idx] = scriptname;  // argv[2] => let's set this as $argv[0]
+  ++idx;
+  for( idxj = 0; idxj < ( argc - 3 ); ++idxj ) myargv[ idx + idxj ] = argv[ 3 + idxj ];
+  idx += idxj;
+  myargv[idx] = NULL;
+  if(( execve( tccpath, myargv, NULL ))) {
+    if( xtccoptlist ) free( xtccoptlist );
+    free( myargv );
+    (void) fclose( memfhandle );
+    return 27;
+  }
+
+ return 0;
+}
+
+
+/** FUNCTIONS: **/
+
+
+insert_text( FILE * fhandle, const char * thistext ) {
+
+ const char * text = thistext;
+
+  if( !fhandle )  return 28;
+  if( !thistext ) return 29;
+
+  while( *text ) {
+    (void) fputc( *text, fhandle );
+    ++text;
+  }
+
+ return 0;
+}
+
+
+mmap_file( const char * filename, void **textp, size_t * textlengthp ) {
+
+ int  fdesc = -1,
+      acharx;
+ long  loffset = (long) -1;
+ char * tmpcharp = NULL;
+ size_t  tmp_sizet = (size_t) 0;
+ FILE * fh_int = NULL;
+
+  if( !textlengthp ) return 30;
+  if( !textp )       return 31;
+  if( !filename )    return 32;
+  if( !*filename )   return 33;
+
+  if( !( fh_int = fopen( filename, "rb" ))) return 34;
+  if( -1 == ( fdesc = fileno( fh_int ))) {
+    (void) fclose( fh_int );
+    return 35;
+  }
+  if( -1 == fseek( fh_int, (long) 0, SEEK_END )) {
+    (void) fclose( fh_int );
+    return 36;
+  }
+  loffset = ftell( fh_int );
+  if( (long) 0 > loffset ) {
+    (void) fclose( fh_int );
+    return 37;
+  }
+  *textlengthp = (size_t)( (long) 1 + loffset );
+  (void) rewind( fh_int );
+  *textp = mmap( NULL, *textlengthp, (int)( PROT_READ | PROT_WRITE | PROT_EXEC ),
+                 (int)( MAP_PRIVATE | MAP_ANONYMOUS ), -1, (off_t) 0 );
+  if( MAP_FAILED == *textp ) {
+    (void) fclose( fh_int );
+    return 38;
+  }
+  // *textp area is zeroed
+  tmpcharp = (char *)( *textp );
+  while( EOF != ( acharx = fgetc( fh_int ))) {
+    tmpcharp[tmp_sizet] = (char)( 0xFF & acharx );
+    ++tmp_sizet;
+  }
+  (void) fclose( fh_int );
+
+ return 0;
+}
+
