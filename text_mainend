@@ -1,0 +1,6 @@
+
+  E( mlist_free_(), from xcript/text_mainend: mlist_free_ failed );
+
+ return $errno;
+}
+

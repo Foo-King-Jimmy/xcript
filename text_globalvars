@@ -1,0 +1,17 @@
+
+int     $errno;    // my (internal) error integer, not (always) the errno
+int     $argc;     // (for global) argc
+char  **$argv;     // (for global) argv; $argv[-1] is valid!
+pid_t   $pid;      // for storing and globalizing process id (PID)
+pid_t   $ppid;     //                      parent process id (PPID)
+size_t  $mlistt;   // total memory (in bytes) used (by mlist mechanism)
+int     $mlistc;   // count(er) of (added) mlist objects
+
+struct mbox_ {     // default values:
+  char     type;   //        (char) 0
+  void   * addr;   //            NULL
+  size_t   size;   //      (size_t) 0
+};
+
+struct mbox_ * $mlistp;   // mlist (root/mother) pointer
+
