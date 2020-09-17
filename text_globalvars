@@ -6,6 +6,8 @@ pid_t   $pid;      // for storing and globalizing process id (PID)
 pid_t   $ppid;     //                      parent process id (PPID)
 size_t  $mlistt;   // total memory (in bytes) used (by mlist mechanism)
 int     $mlistc;   // count(er) of (added) mlist objects
+char  * $pwd;      // (for global) pwd (present working directory)
+mode_t  $umask;    // (for global) umask value
 
 struct mbox_ {     // default values:
   char     type;   //        (char) 0

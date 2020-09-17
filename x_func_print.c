@@ -148,7 +148,116 @@ sprintf_ ( char * strbuf, const char * format, ... ) {
 }
 
 
+print_ret_ ( int * retprnt, const char * path, const char * mode, const char * format, ... ) {
 
+ FILE * fh;
+ char * errallc = NULL;
+ size_t  tmpsizet = (size_t) 0;
+ va_list  myargs;
+
+  if( !retprnt ) return 11;
+  *retprnt = -1;
+  if( !path    ) return 12;
+  if( !*path   ) return 13;
+  if( !mode    ) return 14;
+  if( !*mode   ) return 15;
+  if( !format  ) return 16;
+  // accepted modes:  a a+ ab ab+ a+b w w+ wb wb+ w+b r+ rb+ r+b
+  if(      strcmp( mode, "a"  )  &&  strcmp( mode, "ab"  )  &&  strcmp( mode, "ab+" )
+       &&  strcmp( mode, "a+" )  &&  strcmp( mode, "a+b" )
+       &&  strcmp( mode, "w"  )  &&  strcmp( mode, "wb"  )  &&  strcmp( mode, "wb+" )
+       &&  strcmp( mode, "w+" )  &&  strcmp( mode, "w+b" )
+       &&  strcmp( mode, "r+" )  &&  strcmp( mode, "r+b" )  &&  strcmp( mode, "rb+" )
+    ) {
+    E0( 17, in print_ bad param mode, mode );
+    return 17;
+  }
+  fh = fopen( path, mode );
+  if( !fh ) {
+    tmpsizet = strlen( path ) + strlen( mode ) + 15;   // "PATH: %s, MODE: %s\0"
+    errallc = alloca( tmpsizet );
+    (void) sprintf( errallc, "PATH: %s, MODE: %s", path, mode );
+    E0( 18, in print_ fopen failed, errallc );
+    return 18;
+  }
+  va_start( myargs, format );
+  *retprnt = vfprintf( fh, format, myargs );
+  va_end( myargs );
+  (void) fclose( fh );   // also does fflush()
+  if( 0 > *retprnt ) return 19;   // In case of an output error a negative value returned
+ return 0;
+}
+
+print_void_ ( const char * path, const char * mode, const char * format, ... ) {
+ FILE * fh;
+ int  retprnt = -1;
+ char * errallc = NULL;
+ size_t  tmpsizet = (size_t) 0;
+ va_list  myargs;
+  if( !path    ) return 12;
+  if( !*path   ) return 13;
+  if( !mode    ) return 14;
+  if( !*mode   ) return 15;
+  if( !format  ) return 16;
+  if(      strcmp( mode, "a"  )  &&  strcmp( mode, "ab"  )  &&  strcmp( mode, "ab+" )
+       &&  strcmp( mode, "a+" )  &&  strcmp( mode, "a+b" )
+       &&  strcmp( mode, "w"  )  &&  strcmp( mode, "wb"  )  &&  strcmp( mode, "wb+" )
+       &&  strcmp( mode, "w+" )  &&  strcmp( mode, "w+b" )
+       &&  strcmp( mode, "r+" )  &&  strcmp( mode, "r+b" )  &&  strcmp( mode, "rb+" )
+    ) {
+    E0( 17, in print_void_ bad param mode, mode );
+    return 17;
+  }
+  fh = fopen( path, mode );
+  if( !fh ) {
+    tmpsizet = strlen( path ) + strlen( mode ) + 15;   // "PATH: %s, MODE: %s\0"
+    errallc = alloca( tmpsizet );
+    (void) sprintf( errallc, "PATH: %s, MODE: %s", path, mode );
+    E0( 18, in print_void_ fopen failed, errallc );
+    return 18;
+  }
+  va_start( myargs, format );
+  retprnt = vfprintf( fh, format, myargs );
+  va_end( myargs );
+  (void) fclose( fh );
+  if( 0 > retprnt ) return 19;
+ return 0;
+}
+print_ ( const char * path, const char * mode, const char * format, ... ) {
+ FILE * fh;
+ int  retprnt = -1;
+ char * errallc = NULL;
+ size_t  tmpsizet = (size_t) 0;
+ va_list  myargs;
+  if( !path    ) return 12;
+  if( !*path   ) return 13;
+  if( !mode    ) return 14;
+  if( !*mode   ) return 15;
+  if( !format  ) return 16;
+  if(      strcmp( mode, "a"  )  &&  strcmp( mode, "ab"  )  &&  strcmp( mode, "ab+" )
+       &&  strcmp( mode, "a+" )  &&  strcmp( mode, "a+b" )
+       &&  strcmp( mode, "w"  )  &&  strcmp( mode, "wb"  )  &&  strcmp( mode, "wb+" )
+       &&  strcmp( mode, "w+" )  &&  strcmp( mode, "w+b" )
+       &&  strcmp( mode, "r+" )  &&  strcmp( mode, "r+b" )  &&  strcmp( mode, "rb+" )
+    ) {
+    E0( 17, in print_ bad param mode, mode );
+    return 17;
+  }
+  fh = fopen( path, mode );
+  if( !fh ) {
+    tmpsizet = strlen( path ) + strlen( mode ) + 15;   // "PATH: %s, MODE: %s\0"
+    errallc = alloca( tmpsizet );
+    (void) sprintf( errallc, "PATH: %s, MODE: %s", path, mode );
+    E0( 18, in print_ fopen failed, errallc );
+    return 18;
+  }
+  va_start( myargs, format );
+  retprnt = vfprintf( fh, format, myargs );
+  va_end( myargs );
+  (void) fclose( fh );
+  if( 0 > retprnt ) return 19;
+ return 0;
+}
 
 
 #if  0

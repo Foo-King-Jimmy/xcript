@@ -9,4 +9,6 @@ main( int argc, char **argv ) {
   $mlistt = (size_t) 0;   // -
   $mlistp = NULL;         // -
   getpid_();              // $pid = getpid(); $ppid = getppid();
+  E( pwd_( &$pwd ), in main pwd_ failed just after start );
+  E( umask_raw_get_( &$umask ), in main umask_raw_get_ failed just after start );
 

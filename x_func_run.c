@@ -4,8 +4,8 @@
 ////// ADD   redirection of stdin, stdout, stderr
 
 
-#define   XCRPT_FLAG_INBG   (0)
-#define   XCRPT_FLAG_WAIT   (1)
+#define   XCRPT_INBG   (0)
+#define   XCRPT_WAIT   (1)
 
 
 run_ifwait_ ( char * cmdline, int ifwaitflag ) {
@@ -64,12 +64,13 @@ run_ifwait_ ( char * cmdline, int ifwaitflag ) {
   if( !childpid ) {   // child process
     E( execve( runpath, childargv, NULL ), in run_ execve failed after fork );
     $pid = getpid();
+    // E( kill_( $pid, SIGKILL ), in run_ kill_ failed after fork and failed execve );
     E( kill( $pid, SIGKILL ), in run_ kill failed after fork and failed execve );
     return 16;   // should never actually happen
   }
   // else   // parent process
   // IF NO NEED TO WAIT THEN END IT HERE:
-  if( !ifwaitflag ) return 0;    // XCRPT_FLAG_WAIT (1), XCRPT_FLAG_INBG (0)
+  if( !ifwaitflag ) return 0;    // XCRPT_WAIT (1), XCRPT_INBG (0)
   // PARENT: WAITPID CHILDPID:
   if( -1 == ( retpid = waitpid( childpid, &mywstatus, 0 ))) {
     E( 17, in run_ waitpid failed badly ); return 17;
@@ -82,7 +83,7 @@ run_ifwait_ ( char * cmdline, int ifwaitflag ) {
 }
 
 
-run_      ( char * cmdline ) { return run_ifwait_( cmdline, XCRPT_FLAG_WAIT ); }
-run_wait_ ( char * cmdline ) { return run_ifwait_( cmdline, XCRPT_FLAG_WAIT ); }
-run_inbg_ ( char * cmdline ) { return run_ifwait_( cmdline, XCRPT_FLAG_INBG ); }
+run_      ( char * cmdline ) { return run_ifwait_( cmdline, XCRPT_WAIT ); }
+run_wait_ ( char * cmdline ) { return run_ifwait_( cmdline, XCRPT_WAIT ); }
+run_inbg_ ( char * cmdline ) { return run_ifwait_( cmdline, XCRPT_INBG ); }
 

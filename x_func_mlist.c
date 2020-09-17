@@ -1,6 +1,6 @@
 
-#define   XCRPT_FLAG_MALLOC   (1)
-#define   XCRPT_FLAG_MMAP     (2)
+#define   XCRPT_MALLOC   (1)
+#define   XCRPT_MMAP     (2)
 
 
 /** STATIC **/
@@ -17,8 +17,8 @@ mlist_free_( void ) {
   localc = $mlistc;
   mbx = mbx0 = $mlistp;
   for( ; ; ) {
-    if( XCRPT_FLAG_MALLOC == mbx->type ) free( mbx->addr );
-    if( XCRPT_FLAG_MMAP   == mbx->type ) (void) munmap( mbx->addr, mbx->size );
+    if( XCRPT_MALLOC == mbx->type ) free( mbx->addr );
+    if( XCRPT_MMAP   == mbx->type ) (void) munmap( mbx->addr, mbx->size );
     mbx->addr = NULL;
     mbx->size = (size_t) 0;
     mbx->type = (char) 0;
@@ -50,7 +50,7 @@ mlist_add_( char mtype, void * mptrd, size_t msize ) {
 
   if( !mptrd ) return 11;
   if( !msize ) return 12;
-  if( XCRPT_FLAG_MMAP != mtype && XCRPT_FLAG_MALLOC != mtype ) return 13;
+  if( XCRPT_MMAP != mtype && XCRPT_MALLOC != mtype ) return 13;
   if( $mlistc % 10 ) ++mbx;
   else {
     mbx0 = malloc( sizeof(struct mbox_) * 11 );
@@ -87,7 +87,7 @@ mmap_flags_( size_t msize, void **mptr, int mprot, int mflags ) {
     return 13;
   }
   if( !( MAP_ANONYMOUS & mflags )) (void) memset( *mptr, 0, msize );
-  (void) mlist_add_( XCRPT_FLAG_MMAP, *mptr, msize );
+  (void) mlist_add_( XCRPT_MMAP, *mptr, msize );
 
  return 0;
 }
@@ -108,7 +108,7 @@ malloc_( size_t msize, void **mptr ) {
   *mptr = malloc( msize );
   if( !*mptr ) return 13;
   (void) memset( *mptr, 0, msize );
-  (void) mlist_add_( XCRPT_FLAG_MALLOC, *mptr, msize );
+  (void) mlist_add_( XCRPT_MALLOC, *mptr, msize );
 
  return 0;
 }

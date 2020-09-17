@@ -2,14 +2,14 @@
 // man 2 stat
 // man 7 inode
 
-#define   XCRPT_FLAG_SOCK    S_IFSOCK   // socket
-#define   XCRPT_FLAG_LINK    S_IFLNK    // symbolic link
-#define   XCRPT_FLAG_FILE    S_IFREG    // regular file
-#define   XCRPT_FLAG_DIR     S_IFDIR    // directory
-#define   XCRPT_FLAG_CHAR    S_IFCHR    // character (special) device
-#define   XCRPT_FLAG_FIFO    S_IFIFO    // FIFO, named pipe
-#define   XCRPT_FLAG_BLOCK   S_IFBLK    // block (special) device
-#define   XCRPT_FLAG_EXIST   S_IFMT     // exists - bit mask for the file type bit field
+#define   XCRPT_ISSCK   S_IFSOCK   // socket
+#define   XCRPT_ISLNK   S_IFLNK    // symbolic link
+#define   XCRPT_ISFIL   S_IFREG    // regular file
+#define   XCRPT_ISDIR   S_IFDIR    // directory
+#define   XCRPT_ISCHR   S_IFCHR    // character (special) device
+#define   XCRPT_ISFIF   S_IFIFO    // FIFO, named pipe
+#define   XCRPT_ISBLK   S_IFBLK    // block (special) device
+#define   XCRPT_EXIST   S_IFMT     // exists - bit mask for the file type bit field
 
 /****
   if( character_device_exists_( name )) { }   // S_ISCHR(m)
