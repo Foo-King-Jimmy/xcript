@@ -3,6 +3,20 @@
 #define   XCRPT_MMAP     (2)
 
 
+// Development idea:  remove a (formerly allocated) memory address from the mlist
+/** PUBLIC **/
+mlist_remove_( void * maddr ) {
+  // ...
+  // remove/evict maddr (if it is real) from mlist ...
+  // ...
+ return 11;
+ return 0;
+}
+mlist_rm_    ( void * maddr ) { return mlist_remove_( maddr ); }
+mlist_evict_ ( void * maddr ) { return mlist_remove_( maddr ); }
+mlist_delete_( void * maddr ) { return mlist_remove_( maddr ); }
+
+
 /** STATIC **/
 mlist_free_( void ) {
 
@@ -77,7 +91,6 @@ mlist_add_( char mtype, void * mptrd, size_t msize ) {
 
 /** PUBLIC **/
 mmap_flags_( size_t msize, void **mptr, int mprot, int mflags ) {
-
   if( !mptr )  return 11;
   *mptr = NULL;
   if( !msize ) return 12;
@@ -88,7 +101,6 @@ mmap_flags_( size_t msize, void **mptr, int mprot, int mflags ) {
   }
   if( !( MAP_ANONYMOUS & mflags )) (void) memset( *mptr, 0, msize );
   (void) mlist_add_( XCRPT_MMAP, *mptr, msize );
-
  return 0;
 }
 
@@ -101,7 +113,6 @@ mmap_( size_t msize, void **mptr ) {
 
 /** PUBLIC **/
 malloc_( size_t msize, void **mptr ) {
-
   if( !mptr )  return 11;
   *mptr = NULL;
   if( !msize ) return 12;
@@ -109,7 +120,18 @@ malloc_( size_t msize, void **mptr ) {
   if( !*mptr ) return 13;
   (void) memset( *mptr, 0, msize );
   (void) mlist_add_( XCRPT_MALLOC, *mptr, msize );
+ return 0;
+}
 
+
+/** STATIC **/   // ? mostly
+malloc_noadd_( size_t msize, void **mptr ) {
+  if( !mptr )  return 11;
+  *mptr = NULL;
+  if( !msize ) return 12;
+  *mptr = malloc( msize );
+  if( !*mptr ) return 13;
+  (void) memset( *mptr, 0, msize );
  return 0;
 }
 

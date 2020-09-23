@@ -3,13 +3,23 @@
 #ifdef    E
 #error    "PROBLEM: the macro symbol \'E\' is already defined."
 #endif
-#ifdef    E0
-#error    "PROBLEM: the macro symbol \'E0\' is already defined."
+#ifdef    Es
+#error    "PROBLEM: the macro symbol \'Es\' is already defined."
+#endif
+#ifdef    Ex
+#error    "PROBLEM: the macro symbol \'Ex\' is already defined."
+#endif
+#ifdef    Esx
+#error    "PROBLEM: the macro symbol \'Esx\' is already defined."
 #endif
 
 
 #define   E(func,msg)         $errno = func; if( $errno ) errdisp_( __FILE__, __LINE__, #msg, NULL )
-#define   E0(func,msg,xstr)   $errno = func; if( $errno ) errdisp_( __FILE__, __LINE__, #msg, xstr )
+#define   Es(func,msg,xstr)   $errno = func; if( $errno ) errdisp_( __FILE__, __LINE__, #msg, xstr )
+#define   Ex(func,msg)        \
+          $errno = func; if( $errno ) { errdisp_( __FILE__, __LINE__, #msg, NULL ); goto $EXIT; }
+#define   Esx(func,msg,xstr)  \
+          $errno = func; if( $errno ) { errdisp_( __FILE__, __LINE__, #msg, xstr ); goto $EXIT; }
 
 
 errdisp_( const char * srcfname, int linenum, const char * msg, const char * xstr ) {

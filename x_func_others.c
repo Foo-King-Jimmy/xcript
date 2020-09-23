@@ -222,7 +222,7 @@ symlink_re_ ( const char * target, const char * linkpath ) {
   (void) unlink( linkpath );
   return symlink( target, linkpath );
 }
-ln_sfn_ ( const char * target, const char * linkpath ) { return ln_sfn_( target, linkpath ); }
+ln_sfn_ ( const char * target, const char * linkpath ) { return symlink_re_( target, linkpath ); }
 
 
 basename_( const char * name, char **basenamep ) {
@@ -305,19 +305,6 @@ basename_( const char * name, char **basenamep ) {
 
  return 0;
 }
-
-
-// rmdir file  =>  error (a file)
-// rmdir  dir  =>  ok, let's try to rmdir it
-// rmdir globb pattern  =>  ... same ...  files:error dirs:try  ? force/ignore error on ...
-
-rmdir_ ( const char * dirpath ) {
-  E( rmdir( dirpath ), in rmdir_ wrapper rmdir syscall failed );
- return $errno;
-}
-
-// rmdir_globb_      (   ) { }
-// rmdir_globb_cont_ (   ) { }   // cont(inue) == --ignore-fail-on-non-empty ( man 1 rmdir )
 
 
 /* If PID  >  0, then signal is sent to the process with the ID specified by PID.

@@ -169,7 +169,7 @@ print_ret_ ( int * retprnt, const char * path, const char * mode, const char * f
        &&  strcmp( mode, "w+" )  &&  strcmp( mode, "w+b" )
        &&  strcmp( mode, "r+" )  &&  strcmp( mode, "r+b" )  &&  strcmp( mode, "rb+" )
     ) {
-    E0( 17, in print_ bad param mode, mode );
+    Es( 17, in print_ bad param mode, mode );
     return 17;
   }
   fh = fopen( path, mode );
@@ -177,7 +177,7 @@ print_ret_ ( int * retprnt, const char * path, const char * mode, const char * f
     tmpsizet = strlen( path ) + strlen( mode ) + 15;   // "PATH: %s, MODE: %s\0"
     errallc = alloca( tmpsizet );
     (void) sprintf( errallc, "PATH: %s, MODE: %s", path, mode );
-    E0( 18, in print_ fopen failed, errallc );
+    Es( 18, in print_ fopen failed, errallc );
     return 18;
   }
   va_start( myargs, format );
@@ -205,7 +205,7 @@ print_void_ ( const char * path, const char * mode, const char * format, ... ) {
        &&  strcmp( mode, "w+" )  &&  strcmp( mode, "w+b" )
        &&  strcmp( mode, "r+" )  &&  strcmp( mode, "r+b" )  &&  strcmp( mode, "rb+" )
     ) {
-    E0( 17, in print_void_ bad param mode, mode );
+    Es( 17, in print_void_ bad param mode, mode );
     return 17;
   }
   fh = fopen( path, mode );
@@ -213,7 +213,7 @@ print_void_ ( const char * path, const char * mode, const char * format, ... ) {
     tmpsizet = strlen( path ) + strlen( mode ) + 15;   // "PATH: %s, MODE: %s\0"
     errallc = alloca( tmpsizet );
     (void) sprintf( errallc, "PATH: %s, MODE: %s", path, mode );
-    E0( 18, in print_void_ fopen failed, errallc );
+    Es( 18, in print_void_ fopen failed, errallc );
     return 18;
   }
   va_start( myargs, format );
@@ -240,7 +240,7 @@ print_ ( const char * path, const char * mode, const char * format, ... ) {
        &&  strcmp( mode, "w+" )  &&  strcmp( mode, "w+b" )
        &&  strcmp( mode, "r+" )  &&  strcmp( mode, "r+b" )  &&  strcmp( mode, "rb+" )
     ) {
-    E0( 17, in print_ bad param mode, mode );
+    Es( 17, in print_ bad param mode, mode );
     return 17;
   }
   fh = fopen( path, mode );
@@ -248,7 +248,7 @@ print_ ( const char * path, const char * mode, const char * format, ... ) {
     tmpsizet = strlen( path ) + strlen( mode ) + 15;   // "PATH: %s, MODE: %s\0"
     errallc = alloca( tmpsizet );
     (void) sprintf( errallc, "PATH: %s, MODE: %s", path, mode );
-    E0( 18, in print_ fopen failed, errallc );
+    Es( 18, in print_ fopen failed, errallc );
     return 18;
   }
   va_start( myargs, format );
@@ -260,41 +260,239 @@ print_ ( const char * path, const char * mode, const char * format, ... ) {
 }
 
 
-#if  0
+///////////////////////////////////////////////////////////////////////////
+//
+//  ? echo_err_  <~ there is always fprintf_( stderr, ... ) available !
+//
+//  echo_                echo_void_         echo_ret_   => stdout
+//  echo_file_      echo_file_void_    echo_file_ret_   => pathname
+//  echo_append_  echo_append_void_  echo_append_ret_   => pathname
+//
 
-
-// echo  'CURL_CA_BUNDLE=/webadmin/curlcacert.pem'  >>  /usr/local/etc/bashrc
-//   echo_out_   echo_err_   echo_file_   echo_
-// echo 'x'          => put to stdout (if any) 'x' + \n  => Echo      ( "x",  NULL  );
-// echo 'x'  > file  => create/truncate file w 'x' + \n  => Echo      ( "x", "file" );
-// echo 'x' >> file  => create/append   file w 'x' + \n  => EchoAppend( "x", "file" );
-
-EchoAppend ( const char *text, const char *fileName ) {
-  FILE *fp;
-    if( !fileName ) {
-      if( !stdout ) return -6;
-      else {
-        if( text ) (void) fputs( text, stdout ); (void) fputc( '\n', stdout );
-        (void) fflush( stdout );
-        return 0;
-      }
-    }
-    if( !( fp = fopen( fileName, "ab" ))) return -7;
-    if( text ) (void) fputs( text, fp ); (void) fputc( '\n', fp );
-    (void) fclose( fp );
+echo_ret_ ( int * retprnt, const char * format, ... ) {
+ va_list  myargs;
+ int  retone = -1;
+  if( !retprnt ) return 11;
+  *retprnt = -1;
+  if( !stdout )  return 12;
+  if( !format )  return 13;
+  va_start( myargs, format );
+  *retprnt = vfprintf( stdout, format, myargs );
+  if( 0 <= *retprnt ) retone = fprintf( stdout, "\n" );
+  va_end( myargs );
+  if( 0 > *retprnt ) return 14;
+  if( 1 != retone  ) return 15;
+  ++*retprnt;
  return 0;
 }
 
-Echo ( const char *text, const char *fileName ) {
-  int  retv;
-  FILE *fp;
-    if( fileName ) {   // create/truncate [wb]
-      if( !( fp = fopen( fileName, "wb" ))) return -8; (void) fclose( fp );
-    }
-    if(( retv = EchoAppend( text, fileName ))) return retv;
+echo_void_ ( const char * format, ... ) {
+ va_list  myargs;
+ int  retprnt = -1;
+  if( !stdout )  return 12;
+  if( !format )  return 13;
+  va_start( myargs, format );
+  retprnt = vfprintf( stdout, format, myargs );
+  if( 0 <= retprnt ) (void) fprintf( stdout, "\n" );
+  va_end( myargs );
+  // if( 0 > retprnt ) return 14;
+ return 0;
+}
+echo_ ( const char * format, ... ) {
+ va_list  myargs;
+ int  retprnt = -1;
+  if( !stdout )  return 12;
+  if( !format )  return 13;
+  va_start( myargs, format );
+  retprnt = vfprintf( stdout, format, myargs );
+  if( 0 <= retprnt ) (void) fprintf( stdout, "\n" );
+  va_end( myargs );
+  // if( 0 > retprnt ) return 14;
  return 0;
 }
 
 
-#endif
+echo_file_ret_ ( int * retprnt, const char * path, const char * mode, const char * format, ... ) {
+
+ FILE * fh;
+ int  retone = -1;
+ char * errallc = NULL;
+ size_t  tmpsizet = (size_t) 0;
+ va_list  myargs;
+
+  if( !retprnt ) return 11;
+  *retprnt = -1;
+  if( !path    ) return 12;
+  if( !*path   ) return 13;
+  if( !mode    ) return 14;
+  if( !*mode   ) return 15;
+  if( !format  ) return 16;
+  // accepted modes:  a a+ ab ab+ a+b w w+ wb wb+ w+b r+ rb+ r+b
+  if(      strcmp( mode, "a"  )  &&  strcmp( mode, "ab"  )  &&  strcmp( mode, "ab+" )
+       &&  strcmp( mode, "a+" )  &&  strcmp( mode, "a+b" )
+       &&  strcmp( mode, "w"  )  &&  strcmp( mode, "wb"  )  &&  strcmp( mode, "wb+" )
+       &&  strcmp( mode, "w+" )  &&  strcmp( mode, "w+b" )
+       &&  strcmp( mode, "r+" )  &&  strcmp( mode, "r+b" )  &&  strcmp( mode, "rb+" )
+    ) {
+    Es( 17, in echo_file_ret_ bad param mode, mode );
+    return 17;
+  }
+  fh = fopen( path, mode );
+  if( !fh ) {
+    tmpsizet = strlen( path ) + strlen( mode ) + 15;   // "PATH: %s, MODE: %s\0"
+    errallc = alloca( tmpsizet );
+    (void) sprintf( errallc, "PATH: %s, MODE: %s", path, mode );
+    Es( 18, in echo_file_ret_ fopen failed, errallc );
+    return 18;
+  }
+  va_start( myargs, format );
+  *retprnt = vfprintf( fh, format, myargs );
+  if( 0 <= *retprnt ) retone = fprintf( fh, "\n" );
+  va_end( myargs );
+  (void) fclose( fh );
+  if( 0 > *retprnt ) return 19;
+  if( 1 != retone  ) return 20;
+  ++*retprnt;
+ return 0;
+}
+
+echo_file_void_ ( const char * path, const char * mode, const char * format, ... ) {
+ FILE * fh;
+ char * errallc = NULL;
+ size_t  tmpsizet = (size_t) 0;
+ va_list  myargs;
+ int  retprnt = -1;
+  if( !path    ) return 12;
+  if( !*path   ) return 13;
+  if( !mode    ) return 14;
+  if( !*mode   ) return 15;
+  if( !format  ) return 16;
+  if(      strcmp( mode, "a"  )  &&  strcmp( mode, "ab"  )  &&  strcmp( mode, "ab+" )
+       &&  strcmp( mode, "a+" )  &&  strcmp( mode, "a+b" )
+       &&  strcmp( mode, "w"  )  &&  strcmp( mode, "wb"  )  &&  strcmp( mode, "wb+" )
+       &&  strcmp( mode, "w+" )  &&  strcmp( mode, "w+b" )
+       &&  strcmp( mode, "r+" )  &&  strcmp( mode, "r+b" )  &&  strcmp( mode, "rb+" )
+    ) {
+    Es( 17, in echo_file_void_ bad param mode, mode );
+    return 17;
+  }
+  fh = fopen( path, mode );
+  if( !fh ) {
+    tmpsizet = strlen( path ) + strlen( mode ) + 15;   // "PATH: %s, MODE: %s\0"
+    errallc = alloca( tmpsizet );
+    (void) sprintf( errallc, "PATH: %s, MODE: %s", path, mode );
+    Es( 18, in echo_file_void_ fopen failed, errallc );
+    return 18;
+  }
+  va_start( myargs, format );
+  retprnt = vfprintf( fh, format, myargs );
+  if( 0 <= retprnt ) (void) fprintf( fh, "\n" );
+  va_end( myargs );
+  (void) fclose( fh );
+  // if( 0 > retprnt ) return 19;
+ return 0;
+}
+echo_file_ ( const char * path, const char * mode, const char * format, ... ) {
+ FILE * fh;
+ char * errallc = NULL;
+ size_t  tmpsizet = (size_t) 0;
+ va_list  myargs;
+ int  retprnt = -1;
+  if( !path    ) return 12;
+  if( !*path   ) return 13;
+  if( !mode    ) return 14;
+  if( !*mode   ) return 15;
+  if( !format  ) return 16;
+  if(      strcmp( mode, "a"  )  &&  strcmp( mode, "ab"  )  &&  strcmp( mode, "ab+" )
+       &&  strcmp( mode, "a+" )  &&  strcmp( mode, "a+b" )
+       &&  strcmp( mode, "w"  )  &&  strcmp( mode, "wb"  )  &&  strcmp( mode, "wb+" )
+       &&  strcmp( mode, "w+" )  &&  strcmp( mode, "w+b" )
+       &&  strcmp( mode, "r+" )  &&  strcmp( mode, "r+b" )  &&  strcmp( mode, "rb+" )
+    ) {
+    Es( 17, in echo_file_ bad param mode, mode );
+    return 17;
+  }
+  fh = fopen( path, mode );
+  if( !fh ) {
+    tmpsizet = strlen( path ) + strlen( mode ) + 15;   // "PATH: %s, MODE: %s\0"
+    errallc = alloca( tmpsizet );
+    (void) sprintf( errallc, "PATH: %s, MODE: %s", path, mode );
+    Es( 18, in echo_file_ fopen failed, errallc );
+    return 18;
+  }
+  va_start( myargs, format );
+  retprnt = vfprintf( fh, format, myargs );
+  if( 0 <= retprnt ) (void) fprintf( fh, "\n" );
+  va_end( myargs );
+  (void) fclose( fh );
+  // if( 0 > retprnt ) return 19;
+ return 0;
+}
+
+
+echo_append_ret_ ( int * retprnt, const char * path, const char * format, ... ) {
+ FILE * fh;
+ int  retone = -1;
+ va_list  myargs;
+  if( !retprnt ) return 11;
+  *retprnt = -1;
+  if( !path    ) return 12;
+  if( !*path   ) return 13;
+  if( !format  ) return 16;
+  fh = fopen( path, "ab" );
+  if( !fh ) {
+    Es( 18, in echo_append_ret_ fopen failed, path );
+    return 18;
+  }
+  va_start( myargs, format );
+  *retprnt = vfprintf( fh, format, myargs );
+  if( 0 <= *retprnt ) retone = fprintf( fh, "\n" );
+  va_end( myargs );
+  (void) fclose( fh );
+  if( 0 > *retprnt ) return 19;
+  if( 1 != retone  ) return 20;
+  ++*retprnt;
+ return 0;
+}
+
+echo_append_void_ ( const char * path, const char * format, ... ) {
+ FILE * fh;
+ va_list  myargs;
+ int  retprnt = -1;
+  if( !path    ) return 12;
+  if( !*path   ) return 13;
+  if( !format  ) return 16;
+  fh = fopen( path, "ab" );
+  if( !fh ) {
+    Es( 18, in echo_append_void_ fopen failed, path );
+    return 18;
+  }
+  va_start( myargs, format );
+  retprnt = vfprintf( fh, format, myargs );
+  if( 0 <= retprnt ) (void) fprintf( fh, "\n" );
+  va_end( myargs );
+  (void) fclose( fh );
+  // if( 0 > retprnt ) return 19;
+ return 0;
+}
+echo_append_ ( const char * path, const char * format, ... ) {
+ FILE * fh;
+ va_list  myargs;
+ int  retprnt = -1;
+  if( !path    ) return 12;
+  if( !*path   ) return 13;
+  if( !format  ) return 16;
+  fh = fopen( path, "ab" );
+  if( !fh ) {
+    Es( 18, in echo_append_ fopen failed, path );
+    return 18;
+  }
+  va_start( myargs, format );
+  retprnt = vfprintf( fh, format, myargs );
+  if( 0 <= retprnt ) (void) fprintf( fh, "\n" );
+  va_end( myargs );
+  (void) fclose( fh );
+  // if( 0 > retprnt ) return 19;
+ return 0;
+}
 

@@ -86,4 +86,5 @@ run_ifwait_ ( char * cmdline, int ifwaitflag ) {
 run_      ( char * cmdline ) { return run_ifwait_( cmdline, XCRPT_WAIT ); }
 run_wait_ ( char * cmdline ) { return run_ifwait_( cmdline, XCRPT_WAIT ); }
 run_inbg_ ( char * cmdline ) { return run_ifwait_( cmdline, XCRPT_INBG ); }
+run_bg_   ( char * cmdline ) { return run_ifwait_( cmdline, XCRPT_INBG ); }
 
