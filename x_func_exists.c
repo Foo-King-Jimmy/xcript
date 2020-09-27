@@ -20,9 +20,11 @@
   if(           folder_exists_( name )) { }
   if(              dir_exists_( name )) { }
   if(     regular_file_exists_( name )) { }   // S_ISREG(m)
+  if(         reg_file_exists_( name )) { }
   if(             file_exists_( name )) { }   // ? not a very good name
   if(           socket_exists_( name )) { }   // S_ISSOCK(m)
-  if(          symlink_exists_( name )) { }   // S_ISLNK(m)
+  if(    symbolic_link_exists_( name )) { }   // S_ISLNK(m)
+  if(          symlink_exists_( name )) { }
   if(             link_exists_( name )) { }   // ? not a very good name
   if(       named_pipe_exists_( name )) { }   // S_ISFIFO(m)
   if(             pipe_exists_( name )) { }
@@ -67,9 +69,9 @@ character_device_exists_ ( const char * name ) { return exists_flag_( name, (mod
        character_exists_ ( const char * name ) { return exists_flag_( name, (mode_t) S_IFCHR ); }
 
 // symlink:
-symbolic_link_device_exists_ ( const char * name ) { return exists_flag_( name, (mode_t) S_IFLNK ); }
-      symlink_device_exists_ ( const char * name ) { return exists_flag_( name, (mode_t) S_IFLNK ); }
-                link_exists_ ( const char * name ) { return exists_flag_( name, (mode_t) S_IFLNK ); }
+symbolic_link_exists_ ( const char * name ) { return exists_flag_( name, (mode_t) S_IFLNK ); }
+      symlink_exists_ ( const char * name ) { return exists_flag_( name, (mode_t) S_IFLNK ); }
+         link_exists_ ( const char * name ) { return exists_flag_( name, (mode_t) S_IFLNK ); }
 
 // (regular) file:
 regular_file_exists_ ( const char * name ) { return exists_flag_( name, (mode_t) S_IFREG ); }
