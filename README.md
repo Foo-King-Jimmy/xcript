@@ -4,4 +4,4 @@ C scripting à la UNIX shell with functions
 
 ---
 
-... work in progress ...
+TODO: add a few examples
