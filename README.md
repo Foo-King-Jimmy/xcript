@@ -1,6 +1,6 @@
 # xcript
 
-C scripting à la UNIX shell with functions
+C scripting a la UNIX shell with functions
 
 ---
 
