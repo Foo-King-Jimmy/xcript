@@ -110,17 +110,56 @@ umask_      ( const char * newmsks, mode_t * oldmskp ) { return umask_ret_( newm
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
-// rmdir file  =>  error (a file)
-// rmdir  dir  =>  ok, let's try to rmdir it
-// rmdir globb pattern  =>  ... same ...  files:error dirs:try  ? force/ignore error on ...
 
 rmdir_ ( const char * dirpath ) {
   E( rmdir( dirpath ), in rmdir_ wrapper rmdir syscall failed );
  return $errno;
 }
 
-// rmdir_globb_      (   ) { }
-// rmdir_globb_cont_ (   ) { }   // cont(inue) == --ignore-fail-on-non-empty ( man 1 rmdir )
+// rmdir_globb_:  not-recursive, ignore errors (except: _stop_), applies only to dirs, (?derefs?)
+
+rmdir_globb_ignore_ ( const char * pattern ) {
+ int  idxj = 0;
+ char **fileslst = NULL;
+  if( !pattern  ) return 13;
+  if( !*pattern ) return 14;
+  // ! this returns only dirs/ and no files, no .periods
+  if(( globb_dirs_noadd_( pattern, &fileslst ))) {
+    // on NO-MATCH: here
+    if( fileslst ) free( fileslst );
+    return 11;
+  }
+  while( fileslst[idxj] ) {
+    (void) rmdir_( fileslst[idxj++] );
+  }
+  free( fileslst );
+ return 0;
+}
+rmdir_globb_void_ ( const char * pattern ) { return rmdir_globb_ignore_( pattern ); }
+rmdir_globb_      ( const char * pattern ) { return rmdir_globb_ignore_( pattern ); }
+
+rmdir_globb_stop_ ( const char * pattern ) {
+ int  idxj = 0;
+ char **fileslst = NULL;
+  if( !pattern  ) return 13;
+  if( !*pattern ) return 14;
+  // ! this returns only dirs/ and no files, no .periods
+  if(( globb_dirs_noadd_( pattern, &fileslst ))) {
+    // on NO-MATCH: here
+    if( fileslst ) free( fileslst );
+    return 11;
+  }
+  while( fileslst[idxj] ) {
+    Es(  rmdir_( fileslst[idxj] ),   in rmdir_globb_stop_ rmdir_ failed on, fileslst[idxj] );
+    if( $errno ) {
+      free( fileslst );
+      return 15;
+    }
+    ++idxj;
+  }
+  free( fileslst );
+ return 0;
+}
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
@@ -409,10 +448,10 @@ rm_recursive_void_   ( const char * pathname ) { return rm_r_raw_( pathname, XCR
 rm_r_ignore_         ( const char * pathname ) { return rm_r_raw_( pathname, XCRPT_RMRNOSTOP ); }
 rm_recursive_ignore_ ( const char * pathname ) { return rm_r_raw_( pathname, XCRPT_RMRNOSTOP ); }
 
-rm_r_stop_          ( const char * pathname ) { return rm_r_raw_( pathname, XCRPT_RMRERSTOP ); }
-rm_recursive_stop_  ( const char * pathname ) { return rm_r_raw_( pathname, XCRPT_RMRERSTOP ); }
-rm_r_error_         ( const char * pathname ) { return rm_r_raw_( pathname, XCRPT_RMRERSTOP ); }
-rm_recursive_error_ ( const char * pathname ) { return rm_r_raw_( pathname, XCRPT_RMRERSTOP ); }
+rm_r_stop_           ( const char * pathname ) { return rm_r_raw_( pathname, XCRPT_RMRERSTOP ); }
+rm_recursive_stop_   ( const char * pathname ) { return rm_r_raw_( pathname, XCRPT_RMRERSTOP ); }
+rm_r_error_          ( const char * pathname ) { return rm_r_raw_( pathname, XCRPT_RMRERSTOP ); }
+rm_recursive_error_  ( const char * pathname ) { return rm_r_raw_( pathname, XCRPT_RMRERSTOP ); }
 
 
 ///////////////////////////////////////////////////////////////////////////

@@ -8,6 +8,12 @@ size_t  $mlistt;   // total memory (in bytes) used (by mlist mechanism)
 int     $mlistc;   // count(er) of (added) mlist objects
 char  * $pwd;      // (for global) pwd (present working directory)
 mode_t  $umask;    // (for global) umask value
+char  **$fstypes;  // for reading in /proc/filesystems
+
+unsigned long  $remount_ro,
+               $remount_rw,
+                 $mount_ro,
+                 $mount_rw;
 
 struct mbox_ {     // default values:
   char     type;   //        (char) 0

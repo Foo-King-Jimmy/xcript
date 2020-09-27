@@ -2,16 +2,12 @@
 ///  TODO :
 
 //:  {{ It's up to the programmer to decide when to quit/fatal exit. }}
-//:  DONT DO define-wrappers ! write full-wrappers !   // see eg. kill_, rmdir_ in others
-//:  check all prev/done files and fill up TODO w tasks from them
+//:  {{ DONT DO define-wrappers ! write full-wrappers !   // see eg. kill_ in others }}
+//:  {{ check all prev/done files and fill up TODO w tasks from them }}
+//:  NO: {{ xcript > in main() should chdir() to script's dir (to be in its pwd) }} :NO
 //:  reintroduce (again) negative error-values
 //:  and feed these into my strerror_() func on char * errorc[] to errdisp_()
-//:  NO: { xcript > in main() should chdir() to script's dir (to be in its pwd) } :NO
 //
-//:  extend x_func_change.c w rmdir_globb(_cont)_
-//:  finish x_func_mount.c
-//:  mount_() will use init/parse /proc/filesystems based on static init-var
-//:  run_() should receive child's return value (uint8_t) by waitid()
 //:  in x_func_cp.c there are questions ! about permissions/owners/etc.
 //:  finish in x_func_change.c  chgrp_()  [ mkdir_globb_ ]
 //:  regex should be extended by a func that mmaps a file into str and then does regex
@@ -29,23 +25,22 @@
 #include  <xcript/x_func_print.c>     //  print_(), printf_(), fprintf_ret_(), echo_(), ...
 #include  <xcript/x_func_change.c>    //  chmod_(), chown_(), chgrp_(), chmodown_(), mkdir_(), rm_()
 #include  <xcript/x_func_cp.c>        //  cp_full_(), cp_raw_(), cp_raw_recursive_()
-// #include  <xcript/x_func_mount.c>     //  ???
-// #include  <xcript/x_func_riport.c>    //  ls_(), ps_(), head_(), tail_()
+#include  <xcript/x_func_mount.c>     //
+#include  <xcript/x_func_riport.c>    //  ?:>  ls_(), ps_(), head_(), tail_()
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
 
 
-// change rewrites / rewrites_... remove globb_ change to chmodown_globb_ etc.
 
 
-/*
-*/
-/////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////
-/*
+
+
+
+
 // chown_globb_:   not-recursive, ignore errors, ? applies to files/dirs ?, (derefs)
 // chown_h_globb_: applies to (the) symlink: [ chown_link_, chown_noderef_, chown_nodereflink_ ]
+/*
 chown_globb_dirs_ ( const char * usrname, const char * grpname, const char * pattern ) {
  int  idxj = 0;
  char **fileslst = NULL;
@@ -67,68 +62,24 @@ chown_globb_dirs_ ( const char * usrname, const char * grpname, const char * pat
  return 0;
 }
 */
+
 /////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////
-//  GLOBB:  rm_  rm_f_  rmdir_  mkdir_m_    rm_r_  mv_
-
-
-// run( str ... )  run_redirection_        -ok-
-// mount_auto_  mount umount            umount
-// mv_ dir+file
-// read U; < /tmp/users    ???         <== getline(3)
-// date [ format ]         timefmt
-// grep -q ???             quiet
-// ? evict from mlist ?
-
-
-
-/* MOUNT() -> static init parse ********************************
-
- const char  fstypesrc[ ] = "/proc/filesystems";
- FILE * fhandle = NULL;
- char * tmpp    = NULL,
-        buff[ ??? ];
- int  charx,
-      loopbreak = 0;
-
-  fhandle = fopen( fstypesrc, "rb" );
-  if( !fhandle ) ERROR;
-  while( 1 ) {
-    charx = fgetc( fhandle );
-    if( EOF  == charx ) break;
-    if( '\t' == charx ) {   \t sgsgsg \n
-
-
-readin till \n/eof
- char * tmpp    = NULL,
-        buff[ ??? ];
-
-
-    }
-    else {   // nodev \t sgsgsg \n
-      if( '\n' == charx ) continue;
-      else {
-        while( 1 ) {
-          charx = fgetc( fhandle );
-          if( EOF  == charx ) { loopbreak = 1; break; }
-          if( '\n' == charx ) break;
-        }
-      }
-    }
-    if( loopbreak ) break;
-  }
-
-====== ***********************************/
-
+// GLOBB: +  rm_globb_  rm_f_globb_ USED already  rm_r_globb_
+//        +  mv_globb_
+//        +  mkdir_globb_  mkdir_m_globb_
+// -  run_redirection_
+// -  mv_ dir+file
+// -  read U; < /tmp/users    ???         <== getline(3)
+// -  date [ format ]         timefmt
+// -  grep -q ???             quiet
+// -  evict from mlist - just make it NULL and XCRPT_EVICTD - keep the queue
 //////////////////////////////////////////////////////////////////////////////////////////
 
 #if  0
 +>  /home/jimmy/lice/commands/jjc.c
 
 
-  run_( "strip -s libjitcc_1.so" );
-? run_( "strip -s %s", var_libjitcc );   // sizeof(buf)==?
-  ---
   prog -opt param1 param2   2> errors.txt  1> errors.txt
   ---
 ? redirection_push_( 1, "filename1" );
@@ -137,8 +88,6 @@ readin till \n/eof
 ? redirection_pop_();
 
 
-recursive (find) listing function that malloc_ a char **
-
 readlink like function that readlinks/malloc_ return
 
 tee   ( ? duplicate output ? you mean cp this to that1+that2 ? )  :nothing
@@ -146,7 +95,6 @@ tee   ( ? duplicate output ? you mean cp this to that1+that2 ? )  :nothing
 ?curl ? can be called by run_ OR can be inetrnal as well
 
 +>  custom globb needed : globb files only, globb dirs only, globb (no)dots too, etc.
-
 
 
 +>  add my own file mmap()   mmap_file_
@@ -204,18 +152,7 @@ C_mmap_file ( const char * filename, FILE * fh, void **textp, size_t * textlengt
 }
 
 
-
-
-//  ls   ( can be done w globb, can be used in cp/mv/rm recursive )
-ls simple => easy by globb => do not do globb just like this! what if path is funky w * or sg else
-ls_( path );
->> path does not exist
->> path dir: fdiropen
->> path file ????????
-
-
-
-cp+rm=mv       => easy
+mv=cp+rm       => easy
 //  mv_() :  mv /webadmin/favicon.ico /favicon.ico
 Mv ( const char *oldName, const char *newName ) {
   int  retv;
@@ -226,92 +163,14 @@ Mv ( const char *oldName, const char *newName ) {
 
 
 
-ps, head, tail => skip for now
-DummySort ( const struct dirent **dirListA, const struct dirent **dirListB ) { return 0; }
-
-SelectPIDNumberStrings ( const struct dirent * dirListMember ) {
-  if( strlen( dirListMember->d_name ) == strspn( dirListMember->d_name, "1234567890" )) {
-    if( (size_t) 21 > strlen( dirListMember->d_name )) return 1;
-  }
- return 0;
-}
-
-Ps ( const char *outName ) {
-------------
-// www.stackoverflow.com/q/33266678
-// www.stackoverflow.com/q/38366362
-// www.stackoverflow.com/q/1420426
-// www.unix.stackexchange.com/questions/163145
-// www.man7.org/linux/man-pages/man5/proc.5.html
-// /proc/[pid]/cmdline
-//    This read-only file holds the complete command line for the process, unless \
-      the process is a zombie.  In the latter case, there is nothing in this file: \
-      that is, a read on this file will return 0 characters. The command-line \
-      arguments appear in this file as a set of strings separated by null bytes \
-      ('\0'), with a further null byte after the last string. Think of this file as \
-      the command line that the process wants you to see.
-------------
-// PID:
- int  retscan, myerrno, idx; struct dirent **dirlist;
-  errno = 0;
-  if( 0 > ( retscan = scandir( "/proc", &dirlist, SelectPIDNumberStrings, DummySort ))) {
-    myerrno = errno;
-    // ?! (void) fprintf( stderr, " ERROR: scandir(): %d, %s .\n", myerrno, strerror( myerrno ));
-    return -9;
-  }
-  for( idx = 0; idx < retscan; ++idx ) (void) printf( "%s\t", dirlist[idx]->d_name );
-  // ?! (void) fputc( '\n', stdout );
-  (void) fflush( NULL );
-------------
-// UID:  // USER:
-struct stat mystat;
-uid_t * uidarray = malloc( retscan * sizeof(uid_t) );
-if x  NULL error
-18446744073709551616
-12345678901234567890 == 20
-dirlist[idx]->d_name
-string[ 28 ];
-if( (size_t) 21 > strlen( dirlist[idx]->d_name ))
-(void) sprintf( string, "/proc/%s", dirlist[idx]->d_name );
-int retv = stat( string, &mystat );
-if retv == -1 ERROR  ==>  uidarray[idx] = (uid_t) 0;
-else               ==>  uidarray[idx] = mystat.st_uid;
-------------
-But normally the UID of the process can be retrieved by an fstat call (or a stat command ) on the /proc/[pid] directory itself.
-/proc/<PID>  #directory# == pathname
-int stat(const char *pathname, struct stat *statbuf);
-struct stat { uid_t     st_uid;         /* User ID of owner */
-              gid_t     st_gid;         /* Group ID of owner */
-------------
-// CMD:  // COMMAND:  cat /proc/804/cmdline
-------------
-// TIME:
-------------
- return 0;
-}
-
-
-
-Head ( const char *sourceName, int lines, (char separator,) const char *outputName ) {
-// Head( "./thisfile", 5 /*lines*/, '\n', "./writeithere" );
-// may write a memfd_ file first, mmap() the content
- return 0;
-}
-
-
-
 ///////////////////////////////////////////////////////////////////////////////////////
 /*************************************************************************************/
 
 LIST ALL FUNCTION THAT CAN/NEEDS GLOBBING !
-
 // GLOBBING for functions
-//
-// ? Yes:  rm       ./*
-           rm    -r ./*
-           rmdir    ./mydirs*
-           cp       ./*   to/
-           cp    -r ./*   to/
+
+// ? Yes:  rm     ./*
+           rm  -r ./*
            mv ...
           (mkdir)
 
@@ -328,7 +187,7 @@ LIST ALL FUNCTION THAT CAN/NEEDS GLOBBING !
 
 OK(stdout):  print_  print_void_  print_ret_
 OK(stdout):  echo_ echo_append_ echo_err_ echo_file_
-run_ifwait_ ( char * cmdline, int ifwaitflag ) {        run_  run_wait_  run_inbg_
+run_ifwait_       run_  run_wait_  run_inbg_
 ? curl ? can be called by run_ OR can be inetrnal as well
 ls simple      => easy by globb     ( can be done w globb, can be used in cp/mv/rm recursive )
 //  tee   ( ? duplicate output ? you mean cp this to that1+that2 ? )  :nothing
@@ -371,7 +230,7 @@ sleep_force_(int secs)  sleep_ret_(int secs, int * retsecs )  sleep_void_( int s
 symlink_ ( const char * target, const char * linkpath )    ln_s_    symlink_re_    ln_sfn_
 kill_ ( pid_t procid, int signalnum ) {
 chdir_ ( const char * path ) {  cd_
-// mount static init parse > mount
+mount_
 exists_flag_ ( const char * name, mode_t flag ) name_exists_   it_exists_   exists_ socket_exists_
 rmdir_ ( const char * dirpath )   rmdir_globb_  rmdir_globb_cont_ 
 touch_ ( const char * fname ) {   // simple touch   // touch_globb_ 

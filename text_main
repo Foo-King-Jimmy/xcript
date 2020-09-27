@@ -2,12 +2,17 @@
 int
 main( int argc, char **argv ) {
 
-  $errno  = 0;            // -
-  $argc   = --argc;
-  $argv   = ++argv;
-  $mlistc =          0;   // -
-  $mlistt = (size_t) 0;   // -
-  $mlistp = NULL;         // -
+  $errno   = 0;            // -
+  $argc    = --argc;
+  $argv    = ++argv;
+  $mlistc  =          0;   // -
+  $mlistt  = (size_t) 0;   // -
+  $mlistp  = NULL;         // -
+  $fstypes = NULL;         // -
+  $remount_ro = (unsigned long)( MS_RELATIME | MS_REMOUNT | MS_RDONLY ),
+  $remount_rw = (unsigned long)( MS_RELATIME | MS_REMOUNT             ),
+    $mount_ro = (unsigned long)( MS_RELATIME |              MS_RDONLY ),
+    $mount_rw = (unsigned long)( MS_RELATIME                          );
   getpid_();              // $pid = getpid(); $ppid = getppid();
   E( pwd_( &$pwd ), in main pwd_ failed just after start );
   E( umask_raw_get_( &$umask ), in main umask_raw_get_ failed just after start );
