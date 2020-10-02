@@ -4,6 +4,7 @@
 //:  {{ It's up to the programmer to decide when to quit/fatal exit. }}
 //:  {{ DONT DO define-wrappers ! write full-wrappers !   // see eg. kill_ in others }}
 //:  {{ check all prev/done files and fill up TODO w tasks from them }}
+//:  {{ add ssh-like modul/interface }}
 //:  NO: {{ xcript > in main() should chdir() to script's dir (to be in its pwd) }} :NO
 //:  reintroduce (again) negative error-values
 //:  and feed these into my strerror_() func on char * errorc[] to errdisp_()
@@ -30,53 +31,55 @@
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-// chown_globb_:   not-recursive, ignore errors, ? applies to files/dirs ?, (derefs)
-// chown_h_globb_: applies to (the) symlink: [ chown_link_, chown_noderef_, chown_nodereflink_ ]
-/*
-chown_globb_dirs_ ( const char * usrname, const char * grpname, const char * pattern ) {
- int  idxj = 0;
- char **fileslst = NULL;
-  if( !pattern  ) return 13;
-  if( !*pattern ) return 14;
-  // ! this returns files, dirs/ and no .periods
-  if(( globb_noadd_( pattern, &fileslst ))) {
-    // on NO-MATCH: here
-    if( fileslst ) free( fileslst );
-    return 11;
-  }
-  while( fileslst[idxj] ) {
-    if( directory_exists_( fileslst[idxj] )) {
-      (void) chown_( usrname, grpname, fileslst[idxj] );
-    }
-    ++idxj;
-  }
-  free( fileslst );
- return 0;
-}
-*/
-
-/////////////////////////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////////////////////////////////////////////////////
 // GLOBB: +  rm_globb_  rm_f_globb_ USED already  rm_r_globb_
 //        +  mv_globb_
 //        +  mkdir_globb_  mkdir_m_globb_
 // -  run_redirection_
 // -  mv_ dir+file
 // -  read U; < /tmp/users    ???         <== getline(3)
-// -  date [ format ]         timefmt
 // -  grep -q ???             quiet
 // -  evict from mlist - just make it NULL and XCRPT_EVICTD - keep the queue
+// -  date [ format ]         timefmt
 //////////////////////////////////////////////////////////////////////////////////////////
 
 #if  0
+
+  $redirection_default = NULL;
+  $redirection         = NULL;
+
+
+//------------------------------------------//
+#define   STD0      "\00"
+#define   STD1      "\01"
+#define   STD2      "\02"
+#define   STDIN_    "\00"
+#define   STDOUT_   "\01"
+#define   STDERR_   "\02"
+ const char  std0   [ ] = STD0,
+             std1   [ ] = STD1,
+             std2   [ ] = STD2,
+             stdin_ [ ] = STDIN_,
+             stdout_[ ] = STDOUT_,
+             stderr_[ ] = STDERR_;
+ const char * $redirection[ 3 ];
+  $redirection = NULL;
+  $redirection = { NULL,   NULL,    NULL };
+  $redirection = { std0,   std1,    std2 };
+  $redirection = { stdin_, stdout_, stderr_ };
+//------------------------------------------//
+
+
+  $redirection = { stdin, fh_out, fh_err };
+
+  $redirection = { "/tmp/LOG", "/tmp/LOG-OUT", "/tmp/LOG-ERR" };
+  $redirection = { "\00",      "\01",          "\02"          };
+#define   fd_      "\03"
+#define   fdesc_   "\03"
+#define   fh_      "\04"
+#define   fhandle_ "\04"
+#define   stream_  "\04"
+
+
 +>  /home/jimmy/lice/commands/jjc.c
 
 

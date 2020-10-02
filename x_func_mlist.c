@@ -112,7 +112,8 @@ mmap_( size_t msize, void **mptr ) {
 
 
 /** PUBLIC **/
-malloc_( size_t msize, void **mptr ) {
+malloc_( size_t msize, void * mptr_ ) {
+ void **mptr = (void **) mptr_;
   if( !mptr )  return 11;
   *mptr = NULL;
   if( !msize ) return 12;
@@ -125,7 +126,8 @@ malloc_( size_t msize, void **mptr ) {
 
 
 /** STATIC **/   // ? mostly
-malloc_noadd_( size_t msize, void **mptr ) {
+malloc_noadd_( size_t msize, void * mptr_ ) {
+ void **mptr = (void **) mptr_;
   if( !mptr )  return 11;
   *mptr = NULL;
   if( !msize ) return 12;

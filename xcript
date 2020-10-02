@@ -26,7 +26,7 @@
 
 
 insert_text ( FILE * , const char * );
-mmap_file   ( const char * , void ** , size_t * );
+mmap_file   ( const char * , void * , size_t * );
 
 
 int
@@ -250,8 +250,9 @@ insert_text( FILE * fhandle, const char * thistext ) {
 }
 
 
-mmap_file( const char * filename, void **textp, size_t * textlengthp ) {
+mmap_file( const char * filename, void * textp_, size_t * textlengthp ) {
 
+ void **textp = (void **) textp_;
  int  fdesc = -1,
       acharx;
  long  loffset = (long) -1;
